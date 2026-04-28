@@ -27,7 +27,7 @@ El sistema está diseñado bajo un modelo distribuido para asegurar la alta disp
 
 | Categoría | Tecnología | Uso en el proyecto |
 | :--- | :--- | :--- |
-| **Backend** | Node.js (NestJS) | Microservicios transaccionales. |
+| **Backend** | Node.js | Microservicios transaccionales. |
 | **IA Local** | Ollama | Pipeline de inferencia (Offline). |
 | **Base de Datos** | MongoDB | Persistencia orientada a documentos. |
 | **Gateway** | Nginx | API Gateway / Reverse Proxy. |
@@ -54,6 +54,7 @@ git clone <url-del-repositorio>
 cd DocFlow
 ``
 Despliegue del Clúster:
+
 ```Bash
 docker-compose up --build -d
 ```
