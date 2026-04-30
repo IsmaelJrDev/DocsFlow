@@ -1,0 +1,13 @@
+services:
+  # __________________________________________________________________________________________________
+  # ---- CONTENEDORES DE MONGO ----
+  DocsFlowDatabase:
+    image: mongo:7.0
+    container_name: DocsFlowDatabase
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+    volumes:
+      - ./DocsFlowDatabase:/data/db
+    ports:
+      - "27017:27017"
