@@ -71,7 +71,7 @@ Seguimos una convención estricta para facilitar la auditoría del código:
 
 ```bash
 # 1. Sincronizar develop
-git checkout develop
+git checkout -b develop
 git pull origin develop
 
 # 2. Crear rama específica
