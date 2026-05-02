@@ -1,10 +1,10 @@
 # npm de microservicios
-Auth_Service/node_modules
+auth_service/node_modules
 
 # Carpetas de Mongo
-DocsFlowDatabase1/
-DocsFlowDatabase2/
-DocsFlowDatabase3/
+docsflowdatabase1/
+docsflowdatabase2/
+docsflowdatabase3/
 
 
 
