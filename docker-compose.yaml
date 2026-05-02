@@ -1,23 +1,55 @@
 services:
   # __________________________________________________________________________________________________
-  # ---- CONTENEDORES DE MONGO ----
-  DocsFlowDatabase:
+  # ---- CONTENEDORES DE MONGO CON REPLICA SET----
+  DocsFlowDatabase1:
     image: mongo:7.0
-    container_name: DocsFlowDatabase
+    container_name: DocsFlowDatabase1
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+    command: mongod --replSet rs0 --bind_ip_all --keyFile /etc/mongo-keyfile
     volumes:
-      - ./DocsFlowDatabase:/data/db
+      - ./mongo-keyfile:/etc/mongo-keyfile
+      - ./DocsFlowDatabase1:/data/db
     ports:
       - "27017:27017"
+  
+  DocsFlowDatabase2:
+    image: mongo:7.0
+    container_name: DocsFlowDatabase2
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+    command: mongod --replSet rs0 --bind_ip_all --keyFile /etc/mongo-keyfile
+    volumes:
+      - ./mongo-keyfile:/etc/mongo-keyfile
+      - ./DocsFlowDatabase2:/data/db
+    ports:
+      - "27018:27017"
 
+  DocsFlowDatabase3:
+    image: mongo:7.0
+    container_name: DocsFlowDatabase3
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+    command: mongod --replSet rs0 --bind_ip_all --keyFile /etc/mongo-keyfile
+    volumes:
+      - ./mongo-keyfile:/etc/mongo-keyfile
+      - ./DocsFlowDatabase3:/data/db
+    ports:
+      - "27019:27017"
+      
+  # __________________________________________________________________________________________________
+  # ---- CONTENEDORES DE MICROSERVICIOS ----
   Auth_Service:
     image: node:22
     container_name: Auth_Service
     working_dir: /app
     depends_on:
-      - DocsFlowDatabase
+      - DocsFlowDatabase1
+      - DocsFlowDatabase2
+      - DocsFlowDatabase3
     environment:
       JWT_SECRET: ${JWT_SECRET}
       JWT_EXPIRES_IN: ${JWT_EXPIRES_IN}
