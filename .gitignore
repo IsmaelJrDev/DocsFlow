@@ -1,9 +1,0 @@
-# npm de microservicios
-Auth_Service/node_modules
-
-# Carpetas de Mongo
-DocsFlowDatabase/
-
-
-# Variables de entorno
-.env
