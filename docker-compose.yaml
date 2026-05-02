@@ -1,6 +1,5 @@
 services:
-  # __________________________________________________________________________________________________
-  # ---- CONTENEDORES DE MONGO ----
+  # ---- CONTENEDOR DE MONGO ----
   DocsFlowDatabase:
     image: mongo:7.0
     container_name: DocsFlowDatabase
@@ -12,6 +11,7 @@ services:
     ports:
       - "27017:27017"
 
+  # ---- MICROSERVICIO DE AUTENTICACIÓN ----
   Auth_Service:
     image: node:22
     container_name: Auth_Service
@@ -27,3 +27,19 @@ services:
     command: sh -c "npm install && npm start"
     ports:
       - "3000:3000"
+
+  # ---- TU MICROSERVICIO: USER SERVICE ----
+  User_Service:
+    image: node:22
+    container_name: User_Service
+    working_dir: /app
+    depends_on:
+      - DocsFlowDatabase
+    environment:
+      MONGO_URI: ${MONGO_URI}
+      USER_PORT: 3002
+    volumes:
+      - ./User_Service:/app
+    command: sh -c "npm install && npm start"
+    ports:
+      - "3002:3002"
