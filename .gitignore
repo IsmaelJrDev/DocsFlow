@@ -2,8 +2,14 @@
 Auth_Service/node_modules
 
 # Carpetas de Mongo
-DocsFlowDatabase/
+DocsFlowDatabase1/
+DocsFlowDatabase2/
+DocsFlowDatabase3/
+
 
 
 # Variables de entorno
 .env
+
+# Seguridad Base de datos
+mongo-keyfile
