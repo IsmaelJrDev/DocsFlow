@@ -111,6 +111,8 @@ services:
       USER_SERVICE_URL: "http://user_service:3000"
       OLLAMA_ANALYZER_HOST: ${OLLAMA_ANALYZER_HOST}
       OLLAMA_SUMMARIZER_HOST: ${OLLAMA_SUMMARIZER_HOST}
+      OLLAMA_CLASSIFIER_HOST: ${OLLAMA_CLASSIFIER_HOST}
+      MONGO_URI: ${MONGO_URI}
     volumes:
       - ./docs_service:/app
     command: sh -c "pip install -r requirements.txt && uvicorn main:app --host 0.0.0.0 --port 3000 --reload"
@@ -125,6 +127,8 @@ services:
       USER_SERVICE_URL: "http://user_service:3000"
       OLLAMA_ANALYZER_HOST: ${OLLAMA_ANALYZER_HOST}
       OLLAMA_SUMMARIZER_HOST: ${OLLAMA_SUMMARIZER_HOST}
+      OLLAMA_CLASSIFIER_HOST: ${OLLAMA_CLASSIFIER_HOST}
+      MONGO_URI: ${MONGO_URI}
       IS_REPLICA: "true"
     ports:
       - "3005:3000"
