@@ -101,6 +101,32 @@ services:
     ports:
       - "3003:3000"
 
+  # ---- MICROSERVICIO 3: DOCS SERVICE Y SU REPLICA----
+  docs_service: &docs_service_base
+    image: python:3.11
+    container_name: docs_service
+    working_dir: /app
+    environment:
+      JWT_SECRET: ${JWT_SECRET}
+      USER_SERVICE_URL: "http://user_service:3000"
+      OLLAMA_ANALYZER_HOST: ${OLLAMA_ANALYZER_HOST}
+    volumes:
+      - ./docs_service:/app
+    command: sh -c "pip install -r requirements.txt && uvicorn main:app --host 0.0.0.0 --port 3000 --reload"
+    ports:
+      - "3004:3000"
+
+  docs_service_replica:
+    <<: *docs_service_base
+    container_name: docs_service_replica
+    environment:
+      JWT_SECRET: ${JWT_SECRET}
+      USER_SERVICE_URL: "http://user_service:3000"
+      OLLAMA_ANALYZER_HOST: ${OLLAMA_ANALYZER_HOST}
+      IS_REPLICA: "true"
+    ports:
+      - "3005:3000"
+
   # __________________________________________________________________________________________________
   # ---- CONTENEDOR DE NGINX, PROXY REVERSE ----
   nginx:
@@ -114,4 +140,5 @@ services:
       - auth_service_replica
       - user_service
       - user_service_replica
-    
+      - docs_service
+      - docs_service_replica
