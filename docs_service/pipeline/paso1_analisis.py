@@ -2,7 +2,7 @@ from ollama import Client
 from config import OLLAMA_ANALYZER_HOST
 
 def analizar_texto(texto: str) -> str:
-    print(f"[DOC_SERVICE] 🤖 Enviando a Máquina 1 (llama3 @ {OLLAMA_ANALYZER_HOST})...")
+    print(f"[DOC_SERVICE] Enviando a Máquina 1 (llama3 @ {OLLAMA_ANALYZER_HOST})...")
     try:
         cliente = Client(host=OLLAMA_ANALYZER_HOST)
         respuesta = cliente.chat(
@@ -15,5 +15,5 @@ def analizar_texto(texto: str) -> str:
         analisis = respuesta.message.content
         return analisis
     except Exception as e:
-        print(f"[DOC_SERVICE] ❌ Error conectando a Máquina 1 ({OLLAMA_ANALYZER_HOST}): {e}")
+        print(f"[DOC_SERVICE] Error conectando a Máquina 1 ({OLLAMA_ANALYZER_HOST}): {e}")
         raise e
