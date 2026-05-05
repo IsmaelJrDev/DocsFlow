@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 
 const userSchema = new mongoose.Schema({
-    nombre: { 
+    name: { 
         type: String, 
         required: true 
     },
@@ -10,16 +10,21 @@ const userSchema = new mongoose.Schema({
         required: true, 
         unique: true 
     },
-    rol: { 
-        type: String, 
-        enum: ["Lectura", "Escritura", "Admin"], 
-        default: "Lectura" 
+    role: {
+        type: String,
+        enum: ["secretariat", "admin"],
+        default: "secretariat"
     },
     user_id: { 
         type: String, 
         required: true,
         unique: true
-    }
+    },
+    password: {
+        type: String,
+        required: true
+    
+    },
 }, {
     // Esto garantiza la trazabilidad/auditoría con timestamp (creación y edición)
     timestamps: true 

@@ -82,6 +82,8 @@ services:
       - docsflowdatabase1
     environment:
       MONGO_URI: ${MONGO_URI}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN}
     volumes:
       - ./user_service:/app
     command: sh -c "npm install && npm start"
@@ -89,10 +91,12 @@ services:
       - "3002:3000"
 
   user_service_replica:
-    <<: *auth_service_base
+    <<: *user_service_base
     container_name: user_service_replica
     environment:
       MONGO_URI: ${MONGO_URI}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN}
       IS_REPLICA: "true"
     ports:
       - "3003:3000"
