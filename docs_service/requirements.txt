@@ -6,3 +6,4 @@ httpx
 ollama
 pdfplumber
 python-dotenv
+motor

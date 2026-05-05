@@ -9,7 +9,20 @@ def generar_resumen(analisis_previo: str) -> str:
             model='mistral',
             messages=[{
                 'role': 'user',
-                'content': f'Genera un resumen ejecutivo y conciso basado en el siguiente análisis del documento:\n\n{analisis_previo}'
+                'content': f"""Eres un asistente de resumen ejecutivo en un entorno de oficina corporativa.
+
+                Genera un resumen conciso del siguiente análisis con este formato:
+
+                - **Tema principal:** De qué trata el documento en una línea.
+                - **Puntos clave:** 2 a 4 puntos relevantes del contenido.
+                - **Acción requerida:** Si el documento exige alguna acción, indícala. Si no, escribe "Ninguna".
+                - **Urgencia detectada:** Si hay fechas límite, plazos o situaciones críticas, mencionarlos. Si no, escribe "Sin urgencia".
+
+                Sé directo, sin introducciones ni cierres. Solo el resumen estructurado.
+
+                Análisis:
+
+                {analisis_previo}"""
             }]
         )
         resumen = respuesta.message.content

@@ -6,6 +6,7 @@ from auth import verify_jwt, get_user_role
 from extractor import extraer_texto
 from pipeline.paso1_analisis import analizar_texto
 from pipeline.paso2_resumen import generar_resumen
+from pipeline.paso3_clasificacion import clasificar_documento
 
 app = FastAPI()
 
@@ -76,12 +77,49 @@ async def upload_file(
         
     print("[DOC_SERVICE] 🏁 Pipeline Paso 2 completado exitosamente")
 
+    # Paso 3: Mandar a Máquina 3 (Clasificación)
+    try:
+        clasificacion = clasificar_documento(resumen)
+        print(f"[DOC_SERVICE] Clasificación recibida de Máquina 3: {clasificacion}")
+    except Exception:
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail="Error comunicándose con el motor de clasificación"
+        )
+        
+    print("[DOC_SERVICE] 🏁 Pipeline Paso 3 completado exitosamente")
+
+    # Guardar en base de datos
+    from database import save_document_analysis
+    try:
+        print("[DOC_SERVICE] Guardando documento en la base de datos...")
+        saved_doc = await save_document_analysis(
+            filename=file.filename,
+            uploader_id=user_id,
+            uploader_role=role,
+            text=texto,
+            analysis=analisis,
+            summary=resumen,
+            classification=clasificacion
+        )
+        print(f"[DOC_SERVICE] Documento guardado exitosamente con ID: {saved_doc['document_id']}")
+    except Exception as e:
+        print(f"[DOC_SERVICE] Error guardando en base de datos: {e}")
+        # Not failing the whole request just because DB fails, or we could raise an error
+        # Let's just log it for now or raise it. Let's raise it.
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Error guardando el análisis en la base de datos"
+        )
+
     # 9. Retornar análisis y resumen
     return JSONResponse(content={
-        "status": "paso_2_completado",
+        "status": "paso_3_completado",
         "archivo": file.filename,
         "uploaded_by": user_id,
         "rol": role,
+        "document_id": saved_doc["document_id"],
         "analisis": analisis,
-        "resumen": resumen
+        "resumen": resumen,
+        "clasificacion": clasificacion
     })
