@@ -30,7 +30,7 @@ app.get("/", (req, res) => res.json({ message: "User Service funcional" }));
 mongoose.connect(process.env.MONGO_URI)
     .then(() => {
         // Usamos un puerto distinto al 3000 para evitar conflictos locales
-        const PORT = process.env.USER_PORT || 3002; 
+        const PORT = process.env.USER_PORT || 3000; 
         app.listen(PORT, "0.0.0.0", () => console.log(`Servidor User Service corriendo en puerto ${PORT}`));
     }).catch((err) => {
         console.log("Error al conectar a la base de datos: " + err);

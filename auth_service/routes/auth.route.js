@@ -11,14 +11,24 @@ router.post("/register", async(req, res)=>{
         const {name, email, password, role} = req.body;
         const passhash = await bcrypt.hash(password, 10);
 
+        // Validar que el role sea válido
+        const validRoles = ["secretariat", "admin"];
+        const userRole = validRoles.includes(role) ? role : "secretariat";
+
         // Creación de un usuario
         const user = await User.create({
             name,
             email, 
             password: passhash,
+            role: userRole
         })
 
-        res.status(201).json({message: "Usuario creado"})
+        res.status(201).json({message: "Usuario creado", user: {
+            _id: user._id,
+            name: user.name,
+            email: user.email,
+            role: user.role
+        }})
 
     }catch (error){
         // Si existe algun usuario con el mismo correo

@@ -1,16 +1,17 @@
 const express = require('express');
 const router = express.Router();
-const bcrypt = require('bcrypt'); // Asegúrate de tener instalado npm install bcrypt
-const User = require('../models/User'); 
+const bcrypt = require('bcrypt');
+const User = require('../models/User');
+const { verifyToken } = require('../middleware/auth.middleware');
 
 // 1. Endpoint para MOSTRAR la información (Para la Pantalla 1)
-router.get('/:id', async (req, res) => {
+// Requiere autenticación con JWT
+router.get('/:id', verifyToken, async (req, res) => {
   try {
     const userId = req.params.id;
     
     // Buscamos al usuario en la base de datos
-    const user = await User.findByPk(userId); // Si usas Sequelize (PostgreSQL)
-    // const user = await User.findById(userId); // Usa esto si es Mongoose (MongoDB)
+    const user = await User.findById(userId);
 
     if (!user) {
       return res.status(404).json({ message: 'Usuario no encontrado' });
@@ -18,10 +19,11 @@ router.get('/:id', async (req, res) => {
 
     // Retornamos los datos SIN la contraseña por seguridad
     res.json({
-      id: user.id,
+      _id: user._id,
       name: user.name,
       email: user.email,
-      role: user.role
+      role: user.role,
+      user_id: user.user_id
     });
 
   } catch (error) {
@@ -30,15 +32,16 @@ router.get('/:id', async (req, res) => {
 });
 
 // 2. Endpoint para GUARDAR la edición (Para la Pantalla 2)
-router.put('/:id', async (req, res) => {
+// Requiere autenticación con JWT
+router.put('/:id', verifyToken, async (req, res) => {
   try {
     const userId = req.params.id;
     
-    // Extraemos SOLO lo que permitimos editar del body (ignoramos el rol si lo envían)
+    // Extraemos SOLO lo que permitimos editar del body
     const { name, email, password } = req.body;
 
     // Buscamos el usuario
-    let user = await User.findByPk(userId); // Cambia a findById si es Mongo
+    let user = await User.findById(userId);
     if (!user) {
       return res.status(404).json({ message: 'Usuario no encontrado' });
     }
@@ -46,6 +49,11 @@ router.put('/:id', async (req, res) => {
     // Actualizamos nombre y correo si vienen en la petición
     if (name) user.name = name;
     if (email) user.email = email;
+
+    // Si el usuario no tiene user_id (documento antiguo), asignamos el _id
+    if (!user.user_id) {
+      user.user_id = user._id.toString();
+    }
 
     // Lógica para el candado: Solo encriptar y guardar si el usuario escribió una nueva
     if (password && password.trim() !== "") {
@@ -56,7 +64,12 @@ router.put('/:id', async (req, res) => {
     // Guardamos en la base de datos
     await user.save();
 
-    res.json({ message: 'Perfil actualizado correctamente' });
+    res.json({ message: 'Perfil actualizado correctamente', user: {
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role
+    }});
 
   } catch (error) {
     res.status(500).json({ message: 'Error al actualizar el perfil', error: error.message });
