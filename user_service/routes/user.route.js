@@ -72,6 +72,9 @@ router.put('/:id', verifyToken, async (req, res) => {
     }});
 
   } catch (error) {
+    try {
+      require('fs').writeFileSync('last_error.txt', String(error.stack || error.message));
+    } catch(e) {}
     res.status(500).json({ message: 'Error al actualizar el perfil', error: error.message });
   }
 });
