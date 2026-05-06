@@ -1,5 +1,5 @@
 from fastapi import FastAPI, UploadFile, File, Depends, Header, HTTPException, status
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, Response
 import logging
 
 from auth import verify_jwt, get_user_role
@@ -14,6 +14,23 @@ async def get_token_from_header(authorization: str = Header(None)):
     if not authorization or not authorization.startswith("Bearer "):
         raise HTTPException(status_code=401, detail="Token no proporcionado o inválido")
     return authorization.split(" ")[1]
+
+# --- Mapeo de la respuesta de Ollama a los valores que espera el frontend ---
+CLASSIFICATION_MAP = {
+    "rojo": "red",
+    "ámbar": "amber",
+    "ambar": "amber",
+    "verde": "green",
+    # Por si Ollama responde en inglés
+    "red": "red",
+    "amber": "amber",
+    "green": "green",
+}
+
+def normalize_classification(raw: str) -> str:
+    """Convierte la clasificación de Ollama (Rojo/Ámbar/Verde) al formato del frontend (red/amber/green)."""
+    cleaned = raw.strip().lower().rstrip(".,;:!\"'")
+    return CLASSIFICATION_MAP.get(cleaned, "amber")  # Default: amber si no se reconoce
 
 @app.post("/upload")
 async def upload_file(
@@ -79,8 +96,9 @@ async def upload_file(
 
     # Paso 3: Mandar a Máquina 3 (Clasificación)
     try:
-        clasificacion = clasificar_documento(resumen)
-        print(f"[DOC_SERVICE] Clasificación recibida de Máquina 3: {clasificacion}")
+        clasificacion_raw = clasificar_documento(resumen)
+        clasificacion = normalize_classification(clasificacion_raw)
+        print(f"[DOC_SERVICE] Clasificación recibida de Máquina 3: {clasificacion_raw} → {clasificacion}")
     except Exception:
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,
@@ -95,7 +113,10 @@ async def upload_file(
         print("[DOC_SERVICE] Guardando documento en la base de datos...")
         saved_doc = await save_document_analysis(
             filename=file.filename,
+            content_type=file.content_type,
+            file_data=content,
             uploader_id=user_id,
+            uploader_email=email,
             uploader_role=role,
             text=texto,
             analysis=analisis,
@@ -105,8 +126,6 @@ async def upload_file(
         print(f"[DOC_SERVICE] Documento guardado exitosamente con ID: {saved_doc['document_id']}")
     except Exception as e:
         print(f"[DOC_SERVICE] Error guardando en base de datos: {e}")
-        # Not failing the whole request just because DB fails, or we could raise an error
-        # Let's just log it for now or raise it. Let's raise it.
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Error guardando el análisis en la base de datos"
@@ -123,3 +142,48 @@ async def upload_file(
         "resumen": resumen,
         "clasificacion": clasificacion
     })
+
+
+# ==========================================
+# ENDPOINTS DE CONSULTA (para el frontend)
+# ==========================================
+
+@app.get("/list")
+async def list_documents(token: str = Depends(get_token_from_header)):
+    """Retorna todos los documentos procesados (sin el binario del archivo para eficiencia)."""
+    from database import get_all_documents
+    try:
+        documents = await get_all_documents()
+        return JSONResponse(content=documents)
+    except Exception as e:
+        print(f"[DOC_SERVICE] Error al listar documentos: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Error al obtener los documentos"
+        )
+
+
+@app.get("/download/{document_id}")
+async def download_document(document_id: str, token: str = Depends(get_token_from_header)):
+    """Descarga el archivo original de un documento procesado."""
+    from database import get_document_file
+    try:
+        doc = await get_document_file(document_id)
+        if not doc:
+            raise HTTPException(status_code=404, detail="Documento no encontrado")
+        
+        return Response(
+            content=doc["file_data"],
+            media_type=doc.get("content_type", "application/octet-stream"),
+            headers={
+                "Content-Disposition": f'attachment; filename="{doc["filename"]}"'
+            }
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"[DOC_SERVICE] Error al descargar documento: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Error al descargar el documento"
+        )

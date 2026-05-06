@@ -16,7 +16,11 @@ router.post("/register", async(req, res)=>{
         const userRole = validRoles.includes(role) ? role : "secretariat";
 
         // Creación de un usuario
+        const mongoose = require("mongoose");
+        const _id = new mongoose.Types.ObjectId();
         const user = await User.create({
+            _id,
+            user_id: _id.toString(),
             name,
             email, 
             password: passhash,
@@ -55,6 +59,13 @@ router.post("/login", async(req, res)=>{
             message: "Usuario no encontrado"
         });
 
+        // Verificamos que el usuario tenga contraseña (por si se corrompió)
+        if (!user.password) {
+            return res.status(401).json({
+                message: "La cuenta no tiene contraseña válida, contacta al administrador."
+            });
+        }
+
         // Comparar contraseña hash y no hash
         const valid = await bcrypt.compare(password, user.password);
 
@@ -71,7 +82,15 @@ router.post("/login", async(req, res)=>{
         )
 
         // Si todo esta correcto
-        res.status(200).json({token})
+        res.status(200).json({
+            token,
+            user: {
+                _id: user._id,
+                name: user.name,
+                email: user.email,
+                role: user.role
+            }
+        })
     }catch(error){
         // Si existe algun otro error interno
         res.status(500).json({
