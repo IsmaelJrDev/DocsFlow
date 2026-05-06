@@ -2,7 +2,6 @@ const dotenv = require("dotenv");
 const dotenvExpand = require('dotenv-expand');
 const path = require("path");
 const express = require("express");
-const cors = require("cors");
 const mongoose = require("mongoose");
 const rutasUsuario = require("./routes/auth.route.js")
 
@@ -12,7 +11,6 @@ const app = express();
 
 // Hacemos que el servidor acepte archivos json
 app.use(express.json());
-app.use(cors());
 
 app.use("/users", rutasUsuario);
 

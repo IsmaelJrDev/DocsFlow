@@ -2,7 +2,6 @@ const dotenv = require("dotenv");
 const dotenvExpand = require('dotenv-expand');
 const path = require("path");
 const express = require("express");
-const cors = require("cors");
 const mongoose = require("mongoose");
 
 // Importamos tus rutas de usuario/perfil
@@ -16,7 +15,6 @@ const app = express();
 
 // Middlewares: Hacemos que el servidor acepte JSON y habilitamos CORS
 app.use(express.json());
-app.use(cors());
 
 // Definimos la ruta base para este microservicio. 
 // Nota: Le puse "/perfiles" para diferenciarlo del "/users" de tu compañero, 
